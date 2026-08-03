@@ -1,0 +1,17 @@
+# torch / torchvision: install the build matching your CUDA version, e.g.
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu129
+torch>=2.1
+torchvision>=0.16
+
+torchmetrics>=1.0
+# Required by torchmetrics' FrechetInceptionDistance. It is never imported directly, so it
+# will NOT show up in an import scan — but FID raises ModuleNotFoundError without it.
+torch-fidelity>=0.3
+
+numpy
+pandas
+matplotlib
+
+# Only needed to execute the notebooks headlessly / export HTML
+jupyter
+nbconvert
