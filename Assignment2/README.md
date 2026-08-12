@@ -73,7 +73,14 @@ pip install -r requirements.txt        # torch-fidelity is required and easy to 
 jupyter nbconvert --to notebook --execute --inplace PartA_VAE_VQVAE.ipynb --ExecutePreprocessor.timeout=-1
 jupyter nbconvert --to notebook --execute --inplace PartB_WGAN.ipynb      --ExecutePreprocessor.timeout=-1
 python3 make_partc.py                  # rebuilds the Part C PDF from results/
+python3 make_submission.py             # builds submission/ + the zip, under the portal's 10 MB cap
 ```
+
+`make_submission.py` exists because an executed notebook here is ~12 MB, almost entirely base64 PNG
+figures, and the portal caps uploads at 10 MB per file. It re-encodes the stored image bytes only —
+charts stay lossless PNG, sample grids become JPEG q92 at full resolution — and asserts that code
+cells, execution counts and text outputs come through byte-identical. **Re-executing a notebook
+regenerates plain PNG figures, so re-run this script after any re-execution, before uploading.**
 
 CIFAR-10 downloads automatically into `data/` (`download=True`). `data/`, `checkpoints/` and
 `results/` are gitignored.
