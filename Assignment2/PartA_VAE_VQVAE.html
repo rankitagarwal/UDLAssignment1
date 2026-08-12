@@ -7886,8 +7886,9 @@ latent codes, image generation from them, and a comparison of FID / PSNR / codeb
 </tr>
 </tbody>
 </table>
-<p>All numbers are appended to <code>results/metrics.json</code> as they are produced, so Part C is built from
-that file rather than from live notebook state.</p>
+<p>Part A writes its results to <code>results/metrics_partA.json</code>; Part B writes to
+<code>results/metrics_partB.json</code>. Part C merges these files, so it uses the exact values shown here
+rather than values copied by hand.</p>
 </div>
 </div>
 </div>
@@ -8100,7 +8101,7 @@ batch shape (500, 3, 32, 32)  range [0.000, 1.000]  dtype torch.float32
 <span class="c1"># executed concurrently without racing on a shared JSON. Part C merges them.</span>
 <span class="n">METRICS_PATH</span> <span class="o">=</span> <span class="n">RES_DIR</span> <span class="o">/</span> <span class="s2">"metrics_partA.json"</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">log_metric</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kv</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Append metrics for `model` to results/metrics.json (Part C reads only this file)."""</span>
+<span class="w">    </span><span class="sd">"""Append metrics for `model` to Part A's metrics JSON; Part C merges it with Part B's file."""</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">METRICS_PATH</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span> <span class="k">if</span> <span class="n">METRICS_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="p">{}</span>
     <span class="n">d</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span>
     <span class="n">METRICS_PATH</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
@@ -10071,11 +10072,13 @@ metrics written to /datadisk/nishant/M-Tech AI Bits Pilani/sem2/UDL/Assignment2/
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Discussion-of-Part-A">Discussion of Part A<a class="anchor-link" href="#Discussion-of-Part-A">¶</a></h3><p><strong>β-VAE.</strong> PSNR decreases monotonically in β and FID increases: the KL weight is a direct
-information bottleneck on the latent, and CIFAR-10 at 32×32 has no spare capacity to give away.
-β = 1 dominates on both metrics, so it is the configuration taken forward to Part C. The samples
-from every β are recognisably "VAE-like" — smooth, low-frequency, colour-blob compositions —
-because the Gaussian likelihood makes the decoder predict a conditional mean.</p>
+<h3 id="Discussion-of-Part-A">Discussion of Part A<a class="anchor-link" href="#Discussion-of-Part-A">¶</a></h3><p><strong>β-VAE.</strong> Increasing β tightens the information bottleneck: the KL term decreases monotonically
+from 287 to 233, 176 and 89 nats for β = 1, 2, 4 and 10. However, PSNR and FID are nearly flat
+and non-monotonic for β = 1, 2 and 4: PSNR is approximately 24.0 dB and FID is 108.4, 106.5 and
+107.4 respectively. Clear degradation appears only at β = 10 (22.39 dB PSNR; 118.3 FID).
+Therefore β = 1 is used for Part C as specified in the brief. The samples from every β remain
+recognisably VAE-like—smooth, low-frequency colour-blob compositions—because the Gaussian
+likelihood encourages conditional-mean predictions.</p>
 <p><strong>VQ-VAE.</strong> Reconstruction is far better than any β-VAE (a discrete 8×8×log₂K-bit code with a
 straight-through decoder does not pay the KL tax), and it improves mildly with K as the codebook
 resolves finer colour and texture distinctions. Codebook utilisation is the interesting axis:
